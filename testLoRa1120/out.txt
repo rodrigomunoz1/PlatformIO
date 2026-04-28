@@ -1,0 +1,79 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+
+--- INICIALIZACIÓN ESTILO RANGING DEMO ---
+SetStandbyRC: OK [Stat1:0x4 Stat2:0x13]
+  -> CmdStatus: CMD_OK Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+SetRegulator(LDO): OK [Stat1:0x4 Stat2:0x13]
+  -> CmdStatus: CMD_OK Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+SetFSMode: OK [Stat1:0x4 Stat2:0x17]
+  -> CmdStatus: CMD_OK Mode: FS
+  -> Errors: None
+----------------------------------------
+SetDioAsRfSwitch: ERROR [Stat1:0x3 Stat2:0x17]
+  -> CmdStatus: CMD_PERR (ProcError) [IRQ Pending] Mode: FS
+  -> Errors: None
+----------------------------------------
+CalImg900: OK [Stat1:0x5 Stat2:0x13]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+CalImg2.4: OK [Stat1:0x5 Stat2:0x13]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+SetPacketType: OK [Stat1:0x5 Stat2:0x13]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+CalibrateAll: OK [Stat1:0x5 Stat2:0x13]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby RC
+  -> Errors: None
+----------------------------------------
+SetStandbyXOSC: OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetPaConfig: OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetTxParams: ERROR [Stat1:0x3 Stat2:0x15]
+  -> CmdStatus: CMD_PERR (ProcError) [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetRfFreq(915MHz): OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetModParams: OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetPktParams: OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+WriteBuffer: OK [Stat1:0x5 Stat2:0x15]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Standby XOSC
+  -> Errors: None
+----------------------------------------
+SetTx: OK [Stat1:0x5 Stat2:0x1B]
+  -> CmdStatus: CMD_OK [IRQ Pending] Mode: Tx
+  -> Errors: None
+----------------------------------------
+
+Transmisión iniciada. Esperando 5 segundos...
+

@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../../PlatformIOProjects"
+		},
+		{
+			"name": "testLoRa1120",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
