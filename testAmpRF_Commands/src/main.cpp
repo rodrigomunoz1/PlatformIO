@@ -102,15 +102,28 @@ void sendI2C(uint8_t cmd, uint8_t amp, uint8_t arg) {
 }
 
 uint8_t calculate_crc8_from_32(uint8_t *data, size_t len) {
-  uint32_t crc = 0xFFFFFFFF;
-  for (size_t i = 0; i < len; i++) {
-    crc ^= data[i];
-    for (uint8_t j = 0; j < 8; j++) {
-      if (crc & 1) crc = (crc >> 1) ^ 0xEDB88320;
-      else crc >>= 1;
+    uint32_t crc = 0xFFFFFFFF; // Valor inicial fijo en F103
+    const uint32_t polynomial = 0x04C11DB7;
+    // Procesamos en bloques de 4 bytes (como palabras de 32 bits)
+    for (size_t i = 0; i < len; i += 4) {
+        uint32_t word = 0;
+        // Empaquetado: El F103 al recibir bytes por puntero (uint32_t*)
+        // interpreta el primer byte como el LSB de la palabra (Little Endian).
+        // Si len_bytes no es múltiplo de 4, rellenamos con ceros (Padding).
+        word |= ((uint32_t)(i + 0 < len ? data[i + 0] : 0) << 0);
+        word |= ((uint32_t)(i + 1 < len ? data[i + 1] : 0) << 8);
+        word |= ((uint32_t)(i + 2 < len ? data[i + 2] : 0) << 16);
+        word |= ((uint32_t)(i + 3 < len ? data[i + 3] : 0) << 24);
+        crc ^= word;
+        for (uint8_t j = 0; j < 32; j++) {
+            if (crc & 0x80000000) {
+                crc = (crc << 1) ^ polynomial;
+            } else {
+                crc <<= 1;
+            }
+        }
     }
-  }
-  return (uint8_t)(~crc & 0xFF); // LSB para compatibilidad STM32
+    return (uint8_t)(crc & 0xFF);
 }
 
 void handleResponse(uint8_t cmd, uint8_t amp) {
