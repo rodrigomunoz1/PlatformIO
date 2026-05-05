@@ -7,7 +7,14 @@
  * FRAMEWORK: Arduino / PlatformIO
  */
 
-// --- DEFINICIONES DE HARDWARE (Basado en CubeMX Report) ---
+ // --- DEFINICIONES DE COMANDOS ----------------------------
+
+ #define CMD_TX 0x12
+#define CMD_RX 0x13
+#define CMD_EX 0x14
+ #define CMD_STANDBY 0x10
+
+ // --- DEFINICIONES DE HARDWARE (Basado en CubeMX Report) ---
 #define I2C_ADDRESS         0x20
 #define PIN_GlobalSWIsense  PA1   // ADC1_IN1[span_5](end_span)
 #define PIN_ON5V            PB0   // Control 5V[span_6](end_span)
@@ -121,13 +128,20 @@ void control920(uint8_t cmd, uint8_t args) {
         delay(CHANGEMODEDELAY);
     }
     switch(cmd) {
-        case 0x10: setStandby920(); break;
+        case CMD_STANDBY: setStandby920(); break;
         case 0x11: digitalWrite(PIN_ON5V, LOW); delay(POWEROFFDELAY); amp920.currentMode = OFF; break;
-        case 0x12: // TX
+        case CMD_TX: // TX
             digitalWrite(PIN_SELPWR_LNA_920, LOW);
             digitalWrite(PIN_SELPWR_AMP_920, HIGH);
             digitalWrite(PIN_IN_AMP2_920, (args & 0x01));
             digitalWrite(PIN_IN_AMP3_920, (args & 0x02) >> 1);
+            amp920.currentMode = TX;
+            break;
+        case CMD_RX: // RX
+            digitalWrite(PIN_SELPWR_LNA_920, HIGH);
+            digitalWrite(PIN_SELPWR_AMP_920, LOW);
+            digitalWrite(PIN_SEL_LNAOUT2_920, (args & 0x01));
+            digitalWrite(PIN_SEL_LNAOUT3_920, (args & 0x02) >> 1);
             amp920.currentMode = TX;
             break;
     }
@@ -206,13 +220,16 @@ void setup() {
                      PIN_SEL_LNAOUT2_920, PIN_SEL_LNAOUT3_920, PIN_SELLNA_LNA_920, 
                      PIN_ON_LNA1_920, PIN_SELLNA_EXT_920, PIN_SELPWR_LNA_920, 
                      PIN_SELPWR_AMP_920, PIN_ON_LNA2_920, PIN_LNA_IN1_24, 
-                     PIN_LNA_IN2_24, PIN_LNA_ON_24, PIN_SEL_PWR_LNA_24, PIN_ON_AMP_24};
+                     PIN_LNA_IN2_24, PIN_LNA_ON_24, PIN_SEL_PWR_LNA_24};
     
     for(int p : outputs) pinMode(p, OUTPUT);
+    pinMode(PIN_ON_AMP_24, OUTPUT_OPEN_DRAIN);
 
     analogReadResolution(12);
     ADC1->CR2 |= ADC_CR2_TSVREFE;// Habilitar sensor de temperatura interno[span_22](end_span)
 
+    Wire.setSCL(PB8);
+    Wire.setSDA(PB9);
     Wire.begin(I2C_ADDRESS);
     Wire.setClock(100000);// 100kHz[span_23](end_span)
     Wire.onReceive(receiveEvent);
