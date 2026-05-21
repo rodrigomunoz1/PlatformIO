@@ -30,13 +30,17 @@
 bool toggleFreq = true;
 
 void waitBusy() {
-  uint32_t timeout = millis();
+  // rutina que usa el pin BUSY para esperar a que el chip termine de procesar comandos o esté listo para el siguiente paso
+  /*uint32_t timeout = millis();
   while (digitalRead(BUSY_PIN) == HIGH) {
     if (millis() - timeout > 1000)
       return;
     yield();
   }
-  delayMicroseconds(100);
+  delayMicroseconds(100);*/ 
+
+  //si no se utiliza el pin BUSY, se puede usar un delay fijo
+  delayMicroseconds(500);
 }
 
 void ChipStatusStat1(byte s1) {
@@ -163,17 +167,17 @@ void setup() {
   digitalWrite(RESET_PIN, LOW);
   delay(20);
   digitalWrite(RESET_PIN, HIGH);
-  delay(100);
+  delay(400); //retardo necesario para que el chip se inicialice y pueda responder a comandos (sin usar el pin BUSY)
   waitBusy();
 
   Serial.println(F("\n--- INICIALIZACIÓN ESTILO RANGING DEMO ---"));
 
-  // 1. Establecer Standby RC (Estado base para calibrar)[span_5](end_span)
+  // 1. Establecer Standby RC (Estado base para calibrar)
   byte stbyRC[] = {0x00};
   sendCommandVerified("SetStandbyRC", CMD_SET_STANDBY, stbyRC, 1);
 
   // 2. Definir Regulador (Usamos LDO para asegurar
-  // arranque)[span_6](end_span)[span_7](end_span)
+  // arranque)
   byte regMode[] = {0x00};
   sendCommandVerified("SetRegulator(LDO)", CMD_SET_REGULATOR_MODE, regMode, 1);
   sendCommandVerified("SetFSMode", CMD_SET_FS, regMode, 0);
@@ -186,14 +190,14 @@ void setup() {
   sendCommandVerified("SetDioAsRfSwitch", CMD_SET_DIO_AS_RF_SW, rfSw, 8);
 
   // 4. Calibración de Imagen (900MHz
-  // y 2.4GHz)[span_9](end_span)[span_10](end_span) Necesario para que el chip
+  // y 2.4GHz) Necesario para que el chip
   // "desbloquee" el sintetizador en estas bandas
   byte calImg[] = {0xE1, 0xE2}; // Banda 900MHz
   sendCommandVerified("CalImg900", CMD_CALIBRATE_IMAGE, calImg, 2);
   byte calImg2[] = {0xF7, 0xF8}; // Banda 2.4GHz
   sendCommandVerified("CalImg2.4", CMD_CALIBRATE_IMAGE, calImg2, 2);
 
-  // 5. Definir Packet Type LoRa[span_11](end_span)
+  // 5. Definir Packet Type LoRa
   byte pType[] = {0x01};
   sendCommandVerified("SetPacketType", CMD_SET_PACKET_TYPE, pType, 1);
 
@@ -202,11 +206,11 @@ void setup() {
   sendCommandVerified("CalibrateAll", CMD_CALIBRATE, calAll, 1);
   delay(50);
 
-  // 7. Activar Cristal 32MHz (Standby XOSC)[span_13](end_span)
+  // 7. Activar Cristal 32MHz (Standby XOSC)
   byte stbyXosc[] = {0x01};
   sendCommandVerified("SetStandbyXOSC", CMD_SET_STANDBY, stbyXosc, 1);
 
-  // 8. Configuración de Potencia (PA LP LF para 14dBm)[span_14](end_span)
+  // 8. Configuración de Potencia (PA LP LF para 14dBm)
   // PA_LP requiere regPaSupply = 0 (regulator interno), paDutyCycle = 4, paHpSel = 7
   byte paCfg[] = {0x00, 0x00, 0x04, 0x07};
   sendCommandVerified("SetPaConfig", CMD_SET_PA_CONFIG, paCfg, 4);

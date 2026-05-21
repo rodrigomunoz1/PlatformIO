@@ -48,7 +48,7 @@ void parsePower(String input) {
   
   if (input.indexOf("920") > 0) {
     amp = 0x01;
-    cmd = (input.indexOf("on") > 0) ? 0x10 : 0x11; // 0x10=Encendido, 0x11=Apagado
+    cmd = (input.indexOf("on") > 0) ? 0x10 : 0x11; // 0x10= StandBy (Encendido), 0x11=Apagado
   } else if (input.indexOf("24") > 0) {
     amp = 0x02;
     cmd = (input.indexOf("on") > 0) ? 0x10 : 0x11;
