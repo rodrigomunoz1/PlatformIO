@@ -23,7 +23,7 @@
 // Comandos para recepcion
 #define CMD_READ_BUFFER 0x010A
 #define CMD_GET_RX_BUFFER_STATUS 0x0203
-#define CMD_CLEAR_IRQ_STATUS 0x0117
+#define CMD_CLEAR_IRQ_STATUS 0x0114
 #define CMD_SET_RX 0x0209
 
 // Comandos para transmisión
@@ -257,7 +257,7 @@ void setup() {
   byte clrIrqRxDone[] = {0xFF,0xFF,0xFF,0xFF}; // Limpiar solo IRQ de RxDone
   sendCommandVerified("ClearIRQ", CMD_CLEAR_IRQ_STATUS, clrIrqRxDone, 4);
 
-  byte rxTimeout[] = {0x00, 0x00, 0x00}; //disable timeout
+  byte rxTimeout[] = {0xFF, 0xFF, 0xFF}; //disable timeout
   sendCommandVerified("SetRx", CMD_SET_RX, rxTimeout, 3);
 
 }
@@ -281,37 +281,43 @@ Serial.println(irq0, HEX);
   uint32_t irqStatus = ((uint32_t)irq3 << 24) | ((uint32_t)irq2 << 16) | ((uint32_t)irq1 << 8) | irq0;
 
   Serial.print("IRQstatus' Status: 0x");
-Serial.println(irqStatus, HEX);
+  Serial.println(irqStatus, HEX);
 
-  if (irqStatus & 0x08) { // RXDone interrupt
+  if (irqStatus & 0b1000) { // RXDone interrupt
     Serial.println("\n========================================");
     Serial.println("[!] ¡PAQUETE LORA CAPTURADO EN AIRE!");
     if (irqStatus & 0x80) {
       Serial.println("-> [ERROR]: Falla de CRC. Los datos se corrompieron en el trayecto.");
     } else {
       // Extraer propiedades del paquete del módem (GetRxBufferStatus)
-      waitBusy();
+      delay(50);
       digitalWrite(NSS_PIN, LOW);
       SPI.transfer((CMD_GET_RX_BUFFER_STATUS >> 8) & 0xFF);
       SPI.transfer(CMD_GET_RX_BUFFER_STATUS & 0xFF);
+      digitalWrite(NSS_PIN, HIGH);
+
+      waitBusy();
+      digitalWrite(NSS_PIN, LOW);
       SPI.transfer(0x00); // Byte Dummy de lectura
       byte payloadLength = SPI.transfer(0x00);
       byte bufferStartPointer = SPI.transfer(0x00);
       digitalWrite(NSS_PIN, HIGH);
-
       Serial.print("-> Tamaño detectado: "); Serial.print(payloadLength); Serial.println(" bytes.");
       Serial.print("-> offset bufferRX: "); Serial.print(bufferStartPointer); Serial.println(" bytes.");
       // Extraer datos desde la memoria de la radio (ReadBuffer8)
       waitBusy();
+
       digitalWrite(NSS_PIN, LOW);
       SPI.transfer((CMD_READ_BUFFER >> 8) & 0xFF);
       SPI.transfer(CMD_READ_BUFFER & 0xFF);
       SPI.transfer(bufferStartPointer); // Offset inicial de lectura en la RAM del chip
       SPI.transfer(payloadLength);               // Byte Dummy mandatorio para sincronizar bus de datos
+      digitalWrite(NSS_PIN, HIGH);
+      waitBusy();
 
       char rxBuffer[256];
-      //memset(rxBuffer, 0, sizeof(rxBuffer));
-      
+      memset(rxBuffer, 0, sizeof(rxBuffer));
+      digitalWrite(NSS_PIN, LOW);
       SPI.transfer(0x00); // Dummy read requerido por el protocolo antes de leer datos
       for (int i = 0; i < payloadLength; i++) {
         rxBuffer[i] = (char)SPI.transfer(0x00);
@@ -323,10 +329,13 @@ Serial.println(irqStatus, HEX);
       Serial.println(rxBuffer);
     }
 
+      // 7. Activar Cristal 32MHz (Standby XOSC)
+    byte stbyXosc[] = {0x01};
+    sendCommandVerified("SetStandbyXOSC", CMD_SET_STANDBY, stbyXosc, 1);
+
     //delay(5000);
-    // Limpieza selectiva de flags procesadas
-    byte clrIrq[] = {0xFF, 0xFF, 0xFF, 0xFF};
-    sendCommandVerified("ClearIrqDone", CMD_CLEAR_IRQ_STATUS, clrIrq, 4);
+    byte clrIrqRxDone[] = {0xFF,0xFF,0xFF,0xFF}; // Limpiar solo IRQ de RxDone
+    sendCommandVerified("ClearIRQ", CMD_CLEAR_IRQ_STATUS, clrIrqRxDone, 4);
 
     // Forzar re-entrada al bucle de escucha continuo
     byte rxTimeout[] = {0xFF, 0xFF, 0xFF};
