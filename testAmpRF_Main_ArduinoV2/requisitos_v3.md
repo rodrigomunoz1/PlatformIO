@@ -41,12 +41,13 @@ Todo el direccionamiento y control de hardware se realiza mediante los pines det
 #define PIN_LNA_IN1_24           PB12
 #define PIN_LNA_IN2_24           PB15
 #define PIN_ON_AMP_24            PA9
-````
+```
 
 ## 3. Formato de Trama de Comandos y Respuestas I2C
 ### 3.1. Trama de Comando (Maestro -> Esclavo)
 El microcontrolador recibe paquetes I2C con un formato fijo y obligatorio de 4 bytes:
-Byte 0: Dispositivo	Byte 1: Orden / Comando	Byte 2: Argumento	Byte 3: CRC8
+| Byte 0: Dispositivo|	Byte 1: Orden / Comando|	Byte 2: Argumento|	Byte 3: CRC8|
+|------------------|-----------------------|------------------|-------------|
 *	Códigos de Identificación de Dispositivo:
 *	Controlador Global = 0x11 (Para este dispositivo, el campo Argumento se procesa por defecto como 0xFF en comandos globales).
 *	Amplificador 920 = 0x22
@@ -56,7 +57,8 @@ Byte 0: Dispositivo	Byte 1: Orden / Comando	Byte 2: Argumento	Byte 3: CRC8
 *	Verificación CRC8: Polinomio convencional 0x31. Se calcula estrictamente sobre los primeros 3 bytes recibidos (Dispositivo, Orden, Argumento). Si el CRC8 no coincide, la trama se descarta y no se ejecuta.
 ## 3.2. Trama de Respuesta (Esclavo -> Maestro)
 Cada comando procesado por el esclavo genera de manera obligatoria una estructura de respuesta de 8 bytes cuando el maestro realiza una solicitud de lectura en el bus:
-Byte 0: Disp.	Byte 1: Cmd Recibido	Byte 2: Resultado	Bytes 3-6: Respuesta (4B)	Byte 7: CRC8
+|Byte 0: Disp.	|Byte 1: Cmd Recibido	|Byte 2: Resultado	|Bytes 3-6: Respuesta (4B)	|Byte 7: CRC8|
+|------------------|----|-----------------------|------------------|-------------|
 *	Códigos del Campo Resultado:
 *	Éxito en ejecución (OK) = 0x01
 *	Fallo en ejecución / Alarma de Protección activa (FAIL) = 0xFF

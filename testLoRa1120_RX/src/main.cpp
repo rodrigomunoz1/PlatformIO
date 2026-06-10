@@ -190,13 +190,13 @@ void setup() {
   // 4. Calibración de Imagen (900MHz
   // y 2.4GHz) Necesario para que el chip
   // "desbloquee" el sintetizador en estas bandas
-  //byte calImg[] = {0xE1, 0xE2}; // Banda 900MHz
-  //sendCommandVerified("CalImg900", CMD_CALIBRATE_IMAGE, calImg, 2);
+  byte calImg[] = {0xE1, 0xE2}; // Banda 900MHz
+  sendCommandVerified("CalImg900", CMD_CALIBRATE_IMAGE, calImg, 2);
   
     // 4. Calibración de Imagen (Banda 433MHz)
   // Fórmula de Semtech: Freq(MHz) / 4. Ej: 428MHz/4 = 0x6B, 444MHz/4 = 0x6F
-  byte calImg[] = {0x6B, 0x6F}; 
-  sendCommandVerified("CalImg433", CMD_CALIBRATE_IMAGE, calImg, 2);
+  //byte calImg[] = {0x6B, 0x6F}; 
+  //sendCommandVerified("CalImg433", CMD_CALIBRATE_IMAGE, calImg, 2);
   
   byte calImg2[] = {0xF7, 0xF8}; // Banda 2.4GHz
   sendCommandVerified("CalImg2.4", CMD_CALIBRATE_IMAGE, calImg2, 2);
@@ -224,8 +224,8 @@ void setup() {
   sendCommandVerified("SetPktParams", CMD_SET_PACKET_PARAMS, pktParams, 6);
 
     // 1. Configurar Frecuencia (915 MHz = 915,000,000 Hz)
-  //uint32_t freqHz = 915000000;
-  uint32_t freqHz = 433000000;
+  uint32_t freqHz = 924500000;
+  //uint32_t freqHz = 433000000;
   byte rfFreq[] = {
     (byte)((freqHz >> 24) & 0xFF),
     (byte)((freqHz >> 16) & 0xFF),
@@ -343,6 +343,6 @@ Serial.println(irq0, HEX);
     Serial.println("========================================");
   }
 
-delay(500);
+delay(200);
 
 }

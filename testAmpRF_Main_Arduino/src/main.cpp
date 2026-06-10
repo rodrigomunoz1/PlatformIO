@@ -13,12 +13,15 @@
 #define CMD_RX 0x13
 #define CMD_EX 0x14
  #define CMD_STANDBY 0x10
+#define CMD_OFF 0x11
 
  // --- DEFINICIONES DE HARDWARE (Basado en CubeMX Report) ---
 #define I2C_ADDRESS         0x20
 #define PIN_GlobalSWIsense  PA1   // ADC1_IN1[span_5](end_span)
 #define PIN_ON5V            PB0   // Control 5V[span_6](end_span)
 #define PIN_ON50VGlobal     PB1   // Control 50V[span_7](end_span)
+#define PIN_ON50V1         PA4   //50V en salida P8
+#define PIN_ON50V2         PA5   //50V en salida P9
 
 // Pines Amplificador 920[span_8](end_span)[span_9](end_span)
 #define PIN_IN_AMP2_920      PA15
@@ -41,7 +44,7 @@
 
 // --- PARÁMETROS CRÍTICOS ---
 #define TEMPERATURE_LIMIT   90.0f  //[span_12](end_span)
-#define CONSUMPTION_LIMIT   4500.0f // mA[span_13](end_span)
+#define CONSUMPTION_LIMIT   2800 // mA[span_13](end_span)
 #define CHANGEMODEDELAY     100
 #define ONLNADELAY          50
 #define POWEROFFDELAY       100
@@ -76,6 +79,8 @@ float readInternalTemp() {
 
 void shutdownAll() {
     // Apagar líneas de potencia[span_16](end_span)
+    digitalWrite(PIN_ON50V1, LOW);
+    digitalWrite(PIN_ON50V2, LOW);
     digitalWrite(PIN_ON5V, LOW);
     digitalWrite(PIN_ON50VGlobal, LOW);
     
@@ -89,7 +94,7 @@ void shutdownAll() {
 void updateSensors() {
     currentTemp = readInternalTemp();
     int rawCons = analogRead(PIN_GlobalSWIsense);
-    currentCons = (rawCons * 5000.0f) / 4095.0f;
+    currentCons = 3000/2*(rawCons * 3.3) / 4095.0f;
 
     // Lógica de fallo: apagar si se exceden los límites[span_17](end_span)
     if (currentTemp > TEMPERATURE_LIMIT || currentCons > CONSUMPTION_LIMIT) {
@@ -118,18 +123,23 @@ void setStandby920() {
     digitalWrite(PIN_ON_LNA1_920, HIGH);
     digitalWrite(PIN_ON_LNA2_920, HIGH);
     digitalWrite(PIN_ON5V, HIGH);
+    //digitalWrite(PIN_ON50VX,HIGH); //X E (0,1)
     amp920.currentMode = STANDBY;
 }
 
 void control920(uint8_t cmd, uint8_t args) {
     if (globalFault) return;
-    if (amp920.currentMode != STANDBY && cmd != 0x10 && cmd != 0x11) {
+    if (amp920.currentMode != STANDBY && cmd != CMD_STANDBY && cmd != CMD_OFF) {
         setStandby920();
         delay(CHANGEMODEDELAY);
     }
     switch(cmd) {
         case CMD_STANDBY: setStandby920(); break;
-        case 0x11: digitalWrite(PIN_ON5V, LOW); delay(POWEROFFDELAY); amp920.currentMode = OFF; break;
+        case CMD_OFF: 
+            digitalWrite(PIN_ON5V, LOW); 
+            delay(POWEROFFDELAY); 
+            amp920.currentMode = OFF; 
+            break;
         case CMD_TX: // TX
             digitalWrite(PIN_SELPWR_LNA_920, LOW);
             digitalWrite(PIN_SELPWR_AMP_920, HIGH);
@@ -220,13 +230,14 @@ void setup() {
                      PIN_SEL_LNAOUT2_920, PIN_SEL_LNAOUT3_920, PIN_SELLNA_LNA_920, 
                      PIN_ON_LNA1_920, PIN_SELLNA_EXT_920, PIN_SELPWR_LNA_920, 
                      PIN_SELPWR_AMP_920, PIN_ON_LNA2_920, PIN_LNA_IN1_24, 
-                     PIN_LNA_IN2_24, PIN_LNA_ON_24, PIN_SEL_PWR_LNA_24};
+                     PIN_LNA_IN2_24, PIN_LNA_ON_24, PIN_SEL_PWR_LNA_24, PIN_ON50V1,PIN_ON50V2};
     
     for(int p : outputs) pinMode(p, OUTPUT);
     pinMode(PIN_ON_AMP_24, OUTPUT_OPEN_DRAIN);
 
     analogReadResolution(12);
-    ADC1->CR2 |= ADC_CR2_TSVREFE;// Habilitar sensor de temperatura interno[span_22](end_span)
+    pinMode(PIN_GlobalSWIsense, INPUT_ANALOG);
+    //ADC1->CR2 |= ADC_CR2_TSVREFE;// Habilitar sensor de temperatura interno
 
     Wire.setSCL(PB8);
     Wire.setSDA(PB9);
