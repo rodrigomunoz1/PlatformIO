@@ -461,8 +461,9 @@ void onI2CRequest() {
 void setup() {
     pinMode(PIN_ON5V, OUTPUT);
     pinMode(PIN_ON50V_GLOBAL, OUTPUT);
-    digitalWrite(PIN_ON5V, LOW);
     digitalWrite(PIN_ON50V_GLOBAL, LOW);
+    digitalWrite(PIN_ON5V, LOW);
+    
     
     pinMode(PIN_IN_AMP2_920, OUTPUT);
     pinMode(PIN_IN_AMP3_920, OUTPUT);

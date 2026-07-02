@@ -25,6 +25,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 int msgCount = 0; // Contador de mensajes
 
+
+
 void setup() {
   Serial.begin(115200);
   while (!Serial);
@@ -61,7 +63,7 @@ void setup() {
   LoRa.setSignalBandwidth(125E3);       // BW 125 KHz
   LoRa.setCodingRate4(5);               // CR 4/5
   LoRa.enableCrc();                     // CRC On
-
+  
   // Mensaje de éxito inicial
   display.println("LoRa TX OK!");
   display.print("Freq: 924.5 MHz");
