@@ -51,7 +51,7 @@ void setup() {
   LoRa.setPins(SS_PIN, RST_PIN, DIO0_PIN);
 
   // 3. Inicializar LoRa a 924.5 MHz (Misma frecuencia que el RX)
-  if (!LoRa.begin(924.5E6)) {
+  if (!LoRa.begin(924E6)) {
     Serial.println("¡Fallo al iniciar el modulo LoRa!");
     display.println("Fallo Radio LoRa!");
     display.display();
